@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { Role } from './enums/role.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -10,7 +11,7 @@ export class AuthController {
     // POR ENQUANTO mockado
     const user = {
       id: 1,
-      role: 'ADMIN', // depois vem do banco 
+      role: Role.ADMIN, // depois vem do banco 
     };
     return this.authService.login(user);
   }
