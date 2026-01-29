@@ -7,6 +7,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { AdminModule } from './admin/admin.module';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,6 +28,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
     }),
     AuthModule,
     AdminModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [

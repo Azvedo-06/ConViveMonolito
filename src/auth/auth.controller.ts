@@ -1,18 +1,16 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Role } from './enums/role.enum';
+import { LoginDto } from './dto/login.dto';
+import e from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() body: any) {
-    // POR ENQUANTO mockado
-    const user = {
-      id: 1,
-      role: Role.ADMIN, // depois vem do banco 
-    };
-    return this.authService.login(user);
+  async login(@Body() body: LoginDto) {
+    const { email, password } = body;
+    return this.authService.login(email, password);
   }
 }
