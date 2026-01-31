@@ -1,16 +1,25 @@
 import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Role } from '../../auth/enums/role.enum';
 
-export enum Role {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
+export interface UserAttributes {
+  id: number;
+  name: string;
+  cpf: string;
+  phone: string;
+  email: string;
+  password: string;
+  role: Role;
 }
+
+export interface UserCreationAttributes
+  extends Omit<UserAttributes, 'id'> {}
 
 @Table({
   tableName: 'users',
   timestamps: true,
   underscored: true,
 })
-export class User extends Model<User> {
+export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -22,37 +31,37 @@ export class User extends Model<User> {
     type: DataType.STRING,
     allowNull: false,
   })
-  name: string;
+  declare name: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     unique: true,
   })
-  cpf: string;
+  declare cpf: string;
 
   @Column({
-    type: DataType.BIGINT,
+    type: DataType.STRING,
     allowNull: false,
   })
-  phone: number;
+  declare phone: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     unique: true,
   })
-  email: string;
+  declare email: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  password: string;
+  declare password: string;
 
   @Column({
     type: DataType.ENUM('ADMIN', 'USER'),
     defaultValue: Role.USER,
   })
-  role: Role;
+  declare role: Role;
 }
