@@ -1,0 +1,14 @@
+import { UserResponseDto } from "../dto/userResponse.dto";
+import { User } from "../entity/user.model";
+
+export function toUserResponse(user: User): UserResponseDto {
+  return {
+    id: user.id.toString(),
+    name: user.name,
+    cpf: user.cpf,
+    phone: user.phone,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt,
+  };
+}
