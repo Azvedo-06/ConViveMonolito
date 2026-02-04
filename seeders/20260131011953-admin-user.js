@@ -1,5 +1,6 @@
 'use strict';
 import * as bcrypt from 'bcrypt';
+// seeder para criar um usuário admin se ele não existir
 module.exports = {
   async up (queryInterface) {
     const email = 'admin@convive.com';
@@ -30,7 +31,7 @@ module.exports = {
     }], {});
     console.log('Admin user criado com sucesso.');
   },
-
+  // Função para reverter o seeder, removendo o usuário admin criado
   async down (queryInterface, Sequelize) {
     await queryInterface.bulkDelete('users', { email: 'admin@convive.com' }, {});  
   }

@@ -10,25 +10,25 @@ import { Role } from 'src/auth/enums/role.enum';
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
-    // Endpoint to create a new user
+
     @Public()
     @Post()
     async createUser(@Body() dto: CreateUserDto) {
         const user = await this.usersService.create(dto);
-        return toUserResponse(user);
+        return toUserResponse(user); // Mapear o usuário criado para UserResponseDto
     }
-    // Endpoint to get the authenticated user's information
+
     @Get('me')
     async getMe(@Req() req) {
         const user = await this.usersService.findById(req.user.userId);
-        return toUserResponse(user);
+        return toUserResponse(user); // Mapear o usuário para UserResponseDto
     } 
-    // Endpoint to get all users (admin only)
+
     @Get()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
+    @Roles(Role.ADMIN) // Apenas administradores podem acessar este endpoint
     async getAllUsers() {
         const users = await this.usersService.findAll();
-        return users.map(toUserResponse);
+        return users.map(toUserResponse); // Mapear cada usuário para UserResponseDto .map é uma função de array do JavaScript que aplica a função toUserResponse a cada elemento do array users
     }
 }

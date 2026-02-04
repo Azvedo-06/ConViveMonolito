@@ -33,8 +33,8 @@ import { UsersModule } from './users/users.module';
   controllers: [AppController],
   providers: [
     {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
+      provide: APP_GUARD, // Aplica o guard globalmente
+      useClass: JwtAuthGuard, // Usa o JwtAuthGuard para autenticação
     },
     AppService,
   ],
