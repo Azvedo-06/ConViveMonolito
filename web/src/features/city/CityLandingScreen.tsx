@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { type CityTheme, cityOptions } from '../../theme/cityTheme';
+import { cityFeedData, type CityFeedItem, type FeedCategory } from './cityFeedData';
 
 type CityLandingScreenProps = {
   city: CityTheme;
@@ -8,8 +9,45 @@ type CityLandingScreenProps = {
 };
 
 export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<FeedCategory>('eventos');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItem, setSelectedItem] = useState<CityFeedItem | null>(null);
   const selectedCity = cityOptions.find((option) => option.id === city);
+
+  const categoryOptions: Array<{ id: FeedCategory; label: string }> = [
+    { id: 'eventos', label: 'EVENTOS' },
+    { id: 'cursos', label: 'CURSOS' },
+    { id: 'atividades', label: 'ATIVIDADES' },
+    { id: 'informativos', label: 'INFORMATIVOS' },
+  ];
+
+  const filteredFeed = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return cityFeedData
+      .filter((item) => item.city === city && item.category === activeCategory)
+      .filter((item) => {
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        const haystack = `${item.title} ${item.summary} ${item.location} ${item.organizer}`.toLowerCase();
+        return haystack.includes(normalizedSearch);
+      });
+  }, [city, activeCategory, searchTerm]);
+
+  function handleCategoryChange(category: FeedCategory) {
+    setActiveCategory(category);
+    setSelectedItem(null);
+  }
+
+  const highlightedItem = useMemo(() => {
+    if (!selectedItem) {
+      return null;
+    }
+
+    return filteredFeed.find((item) => item.id === selectedItem.id) ?? null;
+  }, [selectedItem, filteredFeed]);
 
   if (!selectedCity) {
     return null;
@@ -22,50 +60,23 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
           <button
             type="button"
             onClick={onBack}
-            className="font-display text-lg font-bold tracking-wide transition-opacity hover:opacity-80"
+            className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            CONVIVE
+            <span className="font-display text-lg font-bold tracking-wide">CONVIVE</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/85 md:text-[11px]">
+              {selectedCity.label}
+            </span>
           </button>
 
           <button
             type="button"
-            aria-label="Abrir menu"
-            aria-expanded={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen((current) => !current)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded border border-white/30 transition hover:bg-white/10 md:hidden"
+            onClick={onLogin}
+            className="rounded px-3 py-1.5 text-xs font-medium transition hover:bg-white/10 md:hidden"
           >
-            <span className="space-y-1.5">
-              <span className="block h-0.5 w-5 bg-white" />
-              <span className="block h-0.5 w-5 bg-white" />
-              <span className="block h-0.5 w-5 bg-white" />
-            </span>
+            LOGIN
           </button>
 
           <nav className="hidden items-center gap-3 text-xs font-medium md:flex md:gap-6 md:text-sm">
-            <button
-              type="button"
-              className="rounded px-3 py-1.5 transition hover:bg-white/10"
-            >
-              EVENTOS
-            </button>
-            <button
-              type="button"
-              className="rounded px-3 py-1.5 transition hover:bg-white/10"
-            >
-              CURSOS
-            </button>
-            <button
-              type="button"
-              className="rounded px-3 py-1.5 transition hover:bg-white/10"
-            >
-              ATIVIDADES
-            </button>
-            <button
-              type="button"
-              className="rounded px-3 py-1.5 transition hover:bg-white/10"
-            >
-              INFORMATIVOS
-            </button>
             <button
               type="button"
               onClick={onLogin}
@@ -82,52 +93,6 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
             </button>
           </nav>
         </div>
-
-        {isMobileMenuOpen && (
-          <nav className="grid gap-1 border-t border-white/20 px-4 pb-4 pt-2 text-sm font-medium md:hidden">
-            <button
-              type="button"
-              className="rounded px-3 py-2 text-left transition hover:bg-white/10"
-            >
-              EVENTOS
-            </button>
-            <button
-              type="button"
-              className="rounded px-3 py-2 text-left transition hover:bg-white/10"
-            >
-              CURSOS
-            </button>
-            <button
-              type="button"
-              className="rounded px-3 py-2 text-left transition hover:bg-white/10"
-            >
-              ATIVIDADES
-            </button>
-            <button
-              type="button"
-              className="rounded px-3 py-2 text-left transition hover:bg-white/10"
-            >
-              INFORMATIVOS
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                onLogin();
-              }}
-              className="rounded px-3 py-2 text-left transition hover:bg-white/10"
-            >
-              LOGIN
-            </button>
-            <button
-              type="button"
-              onClick={onBack}
-              className="rounded px-3 py-2 text-left transition hover:bg-white/10"
-            >
-              TROCAR CIDADE
-            </button>
-          </nav>
-        )}
       </header>
 
       <main className="min-h-[calc(100vh-76px)] px-4 py-6 md:min-h-[calc(100vh-84px)] md:px-8 md:py-8">
@@ -151,6 +116,123 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
               </h1>
             </div>
           </div>
+
+          <section className="mt-6 rounded-2xl border border-brand-primary/15 bg-white p-4 shadow-cityCard md:p-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-wrap gap-2">
+                {categoryOptions.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => handleCategoryChange(category.id)}
+                    className={`rounded-full border px-4 py-2 text-xs font-semibold tracking-wide transition md:text-sm ${
+                      activeCategory === category.id
+                        ? 'border-brand-primary bg-brand-primary text-white'
+                        : 'border-brand-primary/25 text-brand-primary hover:bg-brand-primary/10'
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+
+              <label className="block w-full md:w-80">
+                <span className="sr-only">Buscar conteudo</span>
+                <input
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.currentTarget.value)}
+                  type="text"
+                  placeholder="Buscar por titulo, local ou organizador"
+                  className="w-full rounded-xl border border-brand-primary/25 bg-white px-4 py-2.5 text-sm text-text outline-none transition focus:border-brand-primary/60"
+                />
+              </label>
+            </div>
+
+            <p className="mt-4 text-sm text-text/70">
+              {filteredFeed.length} resultado(s) em {selectedCity.label} para {activeCategory}.
+            </p>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredFeed.map((item) => (
+                <article
+                  key={item.id}
+                  className="rounded-xl border border-brand-primary/15 bg-surface/70 p-4 transition hover:-translate-y-0.5 hover:shadow-cityCard"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-brand-secondary/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-primary">
+                      {item.category}
+                    </span>
+                    <span className="text-xs text-text/70">{item.date}</span>
+                  </div>
+
+                  <h3 className="mt-3 font-display text-lg leading-tight text-brand-primary">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-2 text-sm text-text/80">{item.summary}</p>
+
+                  <div className="mt-4 space-y-1 text-xs text-text/70">
+                    <p>Local: {item.location}</p>
+                    <p>Responsavel: {item.organizer}</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedItem(item)}
+                    className="mt-4 rounded-lg border border-brand-primary/30 px-3 py-2 text-xs font-semibold text-brand-primary transition hover:bg-brand-primary/10"
+                  >
+                    Ver detalhes
+                  </button>
+                </article>
+              ))}
+            </div>
+
+            {filteredFeed.length === 0 && (
+              <div className="mt-4 rounded-xl border border-dashed border-brand-primary/25 bg-brand-primary/5 p-5 text-sm text-text/80">
+                Nenhum conteudo encontrado com esse filtro. Tente outro termo de busca.
+              </div>
+            )}
+
+            {highlightedItem && (
+              <section className="mt-6 rounded-xl border border-brand-primary/20 bg-white p-5 md:p-6">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-primary/80">
+                      Detalhe do conteudo
+                    </p>
+                    <h2 className="mt-1 font-display text-2xl text-brand-primary">{highlightedItem.title}</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedItem(null)}
+                    className="rounded-lg border border-brand-primary/30 px-3 py-2 text-xs font-semibold text-brand-primary transition hover:bg-brand-primary/10"
+                  >
+                    Fechar detalhe
+                  </button>
+                </div>
+
+                <p className="mt-4 text-sm leading-relaxed text-text/85">{highlightedItem.details}</p>
+
+                <div className="mt-4 grid gap-2 text-sm text-text/80 md:grid-cols-2">
+                  <p>Data: {highlightedItem.date}</p>
+                  <p>Local: {highlightedItem.location}</p>
+                  <p>Responsavel: {highlightedItem.organizer}</p>
+                  <p>Contato: {highlightedItem.contact}</p>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {highlightedItem.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-brand-secondary/20 px-3 py-1 text-xs font-semibold text-brand-primary"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+          </section>
         </div>
       </main>
     </section>
