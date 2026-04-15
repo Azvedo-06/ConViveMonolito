@@ -32,7 +32,7 @@ export function CityOnboardingScreen({
   }
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-surface font-body text-text">
+    <section className="relative min-h-screen overflow-hidden bg-surface font-body text-text" data-testid="city-onboarding-screen">
       <img
         src={backgroundImageUrl}
         alt="Pessoas participando de atividades comunitarias"
@@ -61,6 +61,7 @@ export function CityOnboardingScreen({
                   type="button"
                   key={card.id}
                   onClick={() => handleSelectCity(card.id)}
+                  data-testid={`city-onboarding-card-${card.id}`}
                   className={`
                     ${card.wrapperClassName}
                     group block w-full rounded-sm shadow-cityCard transition-transform duration-300

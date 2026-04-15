@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { type CityTheme, cityOptions } from '../../theme/cityTheme';
 import { cityFeedData, type CityFeedItem, type FeedCategory } from './cityFeedData';
+import { cityCategoryOptions, filterCityFeed } from './cityFeedUtils';
 
 type CityLandingScreenProps = {
   city: CityTheme;
@@ -14,26 +15,8 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
   const [selectedItem, setSelectedItem] = useState<CityFeedItem | null>(null);
   const selectedCity = cityOptions.find((option) => option.id === city);
 
-  const categoryOptions: Array<{ id: FeedCategory; label: string }> = [
-    { id: 'eventos', label: 'EVENTOS' },
-    { id: 'cursos', label: 'CURSOS' },
-    { id: 'atividades', label: 'ATIVIDADES' },
-    { id: 'informativos', label: 'INFORMATIVOS' },
-  ];
-
   const filteredFeed = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
-    return cityFeedData
-      .filter((item) => item.city === city && item.category === activeCategory)
-      .filter((item) => {
-        if (!normalizedSearch) {
-          return true;
-        }
-
-        const haystack = `${item.title} ${item.summary} ${item.location} ${item.organizer}`.toLowerCase();
-        return haystack.includes(normalizedSearch);
-      });
+    return filterCityFeed(cityFeedData, city, activeCategory, searchTerm);
   }, [city, activeCategory, searchTerm]);
 
   function handleCategoryChange(category: FeedCategory) {
@@ -54,13 +37,14 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
   }
 
   return (
-    <section className="min-h-screen bg-surface text-text">
+    <section className="min-h-screen bg-surface text-text" data-testid="city-landing-screen">
       <header className="relative bg-brand-primary text-white">
         <div className="flex items-center justify-between px-4 py-4 md:px-8 md:py-5">
           <button
             type="button"
             onClick={onBack}
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
+            data-testid="city-brand-button"
           >
             <span className="font-display text-lg font-bold tracking-wide">CONVIVE</span>
             <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/85 md:text-[11px]">
@@ -72,6 +56,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
             type="button"
             onClick={onLogin}
             className="rounded px-3 py-1.5 text-xs font-medium transition hover:bg-white/10 md:hidden"
+            data-testid="city-login-button-mobile"
           >
             LOGIN
           </button>
@@ -81,6 +66,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
               type="button"
               onClick={onLogin}
               className="rounded px-3 py-1.5 transition hover:bg-white/10"
+              data-testid="city-login-button-desktop"
             >
               LOGIN
             </button>
@@ -88,6 +74,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
               type="button"
               onClick={onBack}
               className="rounded px-3 py-1.5 transition hover:bg-white/10"
+              data-testid="city-switch-button"
             >
               TROCAR CIDADE
             </button>
@@ -95,7 +82,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
         </div>
       </header>
 
-      <main className="min-h-[calc(100vh-76px)] px-4 py-6 md:min-h-[calc(100vh-84px)] md:px-8 md:py-8">
+      <main className="min-h-[calc(100vh-76px)] px-4 py-6 md:min-h-[calc(100vh-84px)] md:px-8 md:py-8" data-testid="city-landing-main">
         <div className="mx-auto w-full max-w-6xl">
           <div className="relative h-[38vh] min-h-[260px] w-full overflow-hidden rounded-2xl shadow-cityCard md:h-[52vh] md:min-h-[420px]">
             <img
@@ -117,10 +104,10 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
             </div>
           </div>
 
-          <section className="mt-6 rounded-2xl border border-brand-primary/15 bg-white p-4 shadow-cityCard md:p-6">
+          <section className="mt-6 rounded-2xl border border-brand-primary/15 bg-white p-4 shadow-cityCard md:p-6" data-testid="city-feed-section">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap gap-2">
-                {categoryOptions.map((category) => (
+                {cityCategoryOptions.map((category) => (
                   <button
                     key={category.id}
                     type="button"
@@ -130,6 +117,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
                         ? 'border-brand-primary bg-brand-primary text-white'
                         : 'border-brand-primary/25 text-brand-primary hover:bg-brand-primary/10'
                     }`}
+                      data-testid={`city-category-${category.id}`}
                   >
                     {category.label}
                   </button>
@@ -144,6 +132,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
                   type="text"
                   placeholder="Buscar por titulo, local ou organizador"
                   className="w-full rounded-xl border border-brand-primary/25 bg-white px-4 py-2.5 text-sm text-text outline-none transition focus:border-brand-primary/60"
+                  data-testid="city-feed-search"
                 />
               </label>
             </div>
@@ -157,6 +146,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
                 <article
                   key={item.id}
                   className="rounded-xl border border-brand-primary/15 bg-surface/70 p-4 transition hover:-translate-y-0.5 hover:shadow-cityCard"
+                  data-testid={`city-feed-card-${item.id}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="rounded-full bg-brand-secondary/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-primary">
@@ -180,6 +170,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
                     type="button"
                     onClick={() => setSelectedItem(item)}
                     className="mt-4 rounded-lg border border-brand-primary/30 px-3 py-2 text-xs font-semibold text-brand-primary transition hover:bg-brand-primary/10"
+                    data-testid={`city-feed-details-button-${item.id}`}
                   >
                     Ver detalhes
                   </button>
@@ -206,6 +197,7 @@ export function CityLandingScreen({ city, onBack, onLogin }: CityLandingScreenPr
                     type="button"
                     onClick={() => setSelectedItem(null)}
                     className="rounded-lg border border-brand-primary/30 px-3 py-2 text-xs font-semibold text-brand-primary transition hover:bg-brand-primary/10"
+                    data-testid="city-feed-close-details"
                   >
                     Fechar detalhe
                   </button>
