@@ -78,5 +78,6 @@ Motivo
 
 ## Fluxograma Estrutural
 
+![Fluxograma](docs/FluxogramaEstruturalConvive.drawio.png)
 
 
